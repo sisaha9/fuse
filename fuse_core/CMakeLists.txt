@@ -42,7 +42,7 @@ add_library(
 #    src/async_publisher.cpp
 #    src/async_sensor_model.cpp
 #    src/ceres_options.cpp
-#    src/constraint.cpp
+    src/constraint.cpp
 #    src/graph.cpp
 #    src/graph_deserializer.cpp
     src/loss.cpp
@@ -50,8 +50,8 @@ add_library(
 #    src/timestamp_manager.cpp
 #    src/transaction.cpp
 #    src/transaction_deserializer.cpp
-#    src/uuid.cpp
-#    src/variable.cpp
+    src/uuid.cpp
+    src/variable.cpp
 )
 ament_target_dependencies(
   ${PROJECT_NAME}
