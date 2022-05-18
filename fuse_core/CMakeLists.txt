@@ -49,7 +49,7 @@ add_library(
     src/graph_deserializer.cpp
     src/loss.cpp
     src/serialization.cpp
-#    src/timestamp_manager.cpp
+    src/timestamp_manager.cpp
     src/transaction.cpp
     src/transaction_deserializer.cpp
     src/uuid.cpp
