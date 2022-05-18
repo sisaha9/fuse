@@ -149,7 +149,7 @@ namespace fuse_core
 class Graph
 {
 public:
-  FUSE_SMART_PTR_ALIASES_ONLY(Graph);
+  FUSE_SMART_PTR_ALIASES_ONLY(Graph)
 
   /**
    * @brief A range of fuse_ros::Constraint objects
@@ -379,7 +379,7 @@ public:
    * @return            A Ceres Solver Summary structure containing information about the optimization process
    */
   virtual ceres::Solver::Summary optimizeFor(
-    const ros::Duration& max_optimization_time,
+    const rclcpp::Duration& max_optimization_time,
     const ceres::Solver::Options& options = ceres::Solver::Options()) = 0;
 
   /**

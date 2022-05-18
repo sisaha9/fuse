@@ -43,12 +43,12 @@ add_library(
 #    src/async_sensor_model.cpp
 #    src/ceres_options.cpp
     src/constraint.cpp
-#    src/graph.cpp
+    src/graph.cpp
 #    src/graph_deserializer.cpp
     src/loss.cpp
     src/serialization.cpp
 #    src/timestamp_manager.cpp
-#    src/transaction.cpp
+    src/transaction.cpp
 #    src/transaction_deserializer.cpp
     src/uuid.cpp
     src/variable.cpp

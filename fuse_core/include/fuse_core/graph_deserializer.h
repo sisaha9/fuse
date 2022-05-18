@@ -34,11 +34,11 @@
 #ifndef FUSE_CORE_GRAPH_DESERIALIZER_H
 #define FUSE_CORE_GRAPH_DESERIALIZER_H
 
-#include <fuse_msgs/SerializedGraph.h>
+#include <fuse_msgs/msg/SerializedGraph.hpp>
 #include <fuse_core/constraint.h>
 #include <fuse_core/graph.h>
 #include <fuse_core/variable.h>
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 
 
 namespace fuse_core
