@@ -51,7 +51,7 @@ add_library(
     src/serialization.cpp
 #    src/timestamp_manager.cpp
     src/transaction.cpp
-#    src/transaction_deserializer.cpp
+    src/transaction_deserializer.cpp
     src/uuid.cpp
     src/variable.cpp
 )
