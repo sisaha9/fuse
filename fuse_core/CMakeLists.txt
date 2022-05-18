@@ -11,6 +11,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Werror -Wextra -Wpedantic)
 endif()
 
+set(CMAKE_BUILD_TYPE Release)
+
 find_package(Boost REQUIRED COMPONENTS serialization)
 find_package(Ceres REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -44,7 +46,7 @@ add_library(
 #    src/ceres_options.cpp
     src/constraint.cpp
     src/graph.cpp
-#    src/graph_deserializer.cpp
+    src/graph_deserializer.cpp
     src/loss.cpp
     src/serialization.cpp
 #    src/timestamp_manager.cpp
@@ -56,6 +58,7 @@ add_library(
 ament_target_dependencies(
   ${PROJECT_NAME}
     fuse_msgs
+    pluginlib
     rclcpp
     std_msgs
 )
@@ -64,10 +67,10 @@ target_include_directories(
   ${PROJECT_NAME} PUBLIC
     include
     ${Boost_INCLUDE_DIRS}
-    ${catkin_INCLUDE_DIRS}
     ${CERES_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIRS}
     ${GLOG_INCLUDE_DIRS}
+    ${pluginlib_INCLUDE_DIRS}
 )
 target_link_libraries(
   ${PROJECT_NAME}
@@ -76,6 +79,7 @@ target_link_libraries(
     ${CERES_LIBRARIES}
     ${GLOG_LIBRARIES}
 )
+target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
 # fuse_echo executable
 # add_executable(fuse_echo
