@@ -34,7 +34,7 @@
 #ifndef FUSE_CORE_CALLBACK_WRAPPER_H
 #define FUSE_CORE_CALLBACK_WRAPPER_H
 
-#include <ros/callback_queue_interface.h>
+#include <rclcpp/waitable.hpp>
 
 #include <functional>
 #include <future>
@@ -80,14 +80,14 @@ namespace fuse_core
  * std::vector<double> really_big_data(1000000);
  * auto callback = boost::make_shared<CallbackWrapper<double> >(
  *   std::bind(&MyClass::processData, &my_object, std::ref(really_big_data)));
- * std::future<double> result = callback->getFuture();
+ * std::future<double> result = callback->get_future();
  * ros::getGlobalCallbackQueue()->addCallback(callback);
  * result.wait();
  * ROS_INFO_STREAM("The result is: " << result.get());
  * @endcode
  */
 template <typename T>
-class CallbackWrapper : public ros::CallbackInterface
+class CallbackWrapper : public rclcpp::Waitable
 {
 public:
   using CallbackFunction = std::function<T(void)>;
@@ -98,28 +98,53 @@ public:
    * @param[in] callback The function to be called from the callback queue
    */
   explicit CallbackWrapper(CallbackFunction callback) :
+    executed_(false),
     callback_(callback)
   {
   }
 
   /**
-   * @brief Get a future<T> object that represents the function's return value
+   * @brief Override of the Waitable method
    */
-  std::future<T> getFuture()
+  void add_to_wait_set(rcl_wait_set_t *) override
   {
-    return promise_.get_future();
   }
 
   /**
    * @brief Call this function. This is used by the callback queue.
    */
-  CallResult call() override
+  void execute(std::shared_ptr<void> &) override
   {
+    executed_ = true;
     promise_.set_value(callback_());
-    return Success;
+  }
+
+  /**
+   * @brief Get a future<T> object that represents the function's return value
+   */
+  std::future<T> get_future()
+  {
+    return promise_.get_future();
+  }
+
+  /**
+   * @brief Override of the Waitable method
+   */
+  bool is_ready(rcl_wait_set_t *) override
+  {
+    return executed_;
+  }
+
+  /**
+   * @brief Override of the Waitable method
+   */
+  std::shared_ptr<void> take_data() override
+  {
+    return nullptr;
   }
 
 private:
+  std::atomic<bool> executed_;
   CallbackFunction callback_;  //!< The function to execute within the
   std::promise<T> promise_;  //!< Promise/Future used to return data after the callback is executed
 };
@@ -127,11 +152,10 @@ private:
 // Specialization to handle 'void' return types
 // Specifically, promise_.set_value(callback_()) does not work if callback_() returns void.
 template <>
-inline ros::CallbackInterface::CallResult CallbackWrapper<void>::call()
+inline void CallbackWrapper<void>::execute(std::shared_ptr<void> &)
 {
   callback_();
   promise_.set_value();
-  return Success;
 }
 
 }  // namespace fuse_core
