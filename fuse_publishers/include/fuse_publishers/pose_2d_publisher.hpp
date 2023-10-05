@@ -53,7 +53,7 @@
 #include <fuse_variables/position_2d_stamped.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>

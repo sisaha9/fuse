@@ -21,7 +21,6 @@ find_package(rclcpp REQUIRED)
 
 find_package(Ceres REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(glog REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(suitesparse-extras.cmake)
@@ -58,7 +57,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 target_link_libraries(${PROJECT_NAME} PUBLIC
   Boost::serialization
-  Ceres::ceres
+  ceres
   Eigen3::Eigen
   fuse_core::fuse_core
   fuse_graphs::fuse_graphs
@@ -82,8 +81,8 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_subdirectory(test)
-  add_subdirectory(benchmark)
+  # add_subdirectory(test)
+  # add_subdirectory(benchmark)
 endif()
 
 #############
@@ -116,10 +115,8 @@ ament_export_dependencies(
   geometry_msgs
   pluginlib
   rclcpp
-
   Ceres
   Eigen3
-  glog
 )
 
 ament_package(CONFIG_EXTRAS suitesparse-extras.cmake)

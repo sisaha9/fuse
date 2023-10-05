@@ -175,7 +175,7 @@ public:
     waitable_ptr = std::make_shared<CallbackWrapper>();
     node->get_node_waitables_interface()->add_waitable(waitable_ptr, (rclcpp::CallbackGroup::SharedPtr) nullptr);
    */
-  void add_to_wait_set(rcl_wait_set_t * wait_set) override;
+  bool add_to_wait_set(rcl_wait_set_t * wait_set) override;
 
   std::shared_ptr<void> take_data() override;
 

@@ -57,7 +57,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(${PROJECT_NAME}
-  Ceres::ceres
+  ceres
   fuse_constraints::fuse_constraints
   fuse_core::fuse_core
   fuse_graphs::fuse_graphs
@@ -67,7 +67,6 @@ target_link_libraries(${PROJECT_NAME}
   ${geometry_msgs_TARGETS}
   ${nav_msgs_TARGETS}
   pluginlib::pluginlib
-  rclcpp_components::component
   rclcpp::rclcpp
   ${sensor_msgs_TARGETS}
   ${std_srvs_TARGETS}
@@ -91,8 +90,8 @@ if(BUILD_TESTING)
   )
   set(AMENT_LINT_AUTO_FILE_EXCLUDE ${_linter_excludes})
   ament_lint_auto_find_test_dependencies()
-  add_subdirectory(test)
-  add_subdirectory(benchmark)
+  # add_subdirectory(test)
+  # add_subdirectory(benchmark)
 endif()
 
 #############

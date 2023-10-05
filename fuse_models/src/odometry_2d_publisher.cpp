@@ -52,7 +52,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <tf2_2d/tf2_2d.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // Register this publisher with ROS as a plugin.
 PLUGINLIB_EXPORT_CLASS(fuse_models::Odometry2DPublisher, fuse_core::Publisher)
@@ -98,11 +98,7 @@ void Odometry2DPublisher::onInit()
     );
 
     tf_listener_ = std::make_unique<tf2_ros::TransformListener>(
-      *tf_buffer_,
-      interfaces_.get_node_base_interface(),
-      interfaces_.get_node_logging_interface(),
-      interfaces_.get_node_parameters_interface(),
-      interfaces_.get_node_topics_interface());
+      *tf_buffer_);
   }
 
   // Advertise the topics

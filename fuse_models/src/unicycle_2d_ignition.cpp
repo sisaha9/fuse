@@ -57,7 +57,7 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <std_srvs/srv/empty.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // Register this motion model with ROS as a plugin.
 PLUGINLIB_EXPORT_CLASS(fuse_models::Unicycle2DIgnition, fuse_core::SensorModel);

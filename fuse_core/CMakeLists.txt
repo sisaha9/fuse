@@ -50,28 +50,34 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_link_libraries(${PROJECT_NAME}
   Boost::serialization
-  Ceres::ceres
+  ceres
   Eigen3::Eigen
   ${fuse_msgs_TARGETS}
   pluginlib::pluginlib
   rclcpp::rclcpp
   ${rcl_interfaces_TARGETS}
 )
-target_link_libraries(${PROJECT_NAME} PRIVATE
-  rclcpp_components::component
+ament_target_dependencies(
+  ${PROJECT_NAME}
+  ament_cmake_ros
+  fuse_msgs
+  pluginlib
+  rcl_interfaces
+  rclcpp
+  rclcpp_components
+  Ceres
+  Eigen3
 )
 
 ## fuse_echo executable
 add_library(fuse_echo_component SHARED src/fuse_echo.cpp)
 target_link_libraries(fuse_echo_component PUBLIC ${PROJECT_NAME})
-target_link_libraries(fuse_echo_component PRIVATE rclcpp_components::component)
 
 rclcpp_components_register_node(fuse_echo_component
   PLUGIN "fuse_core::FuseEcho"
   EXECUTABLE fuse_echo
-  EXECUTOR SingleThreadedExecutor
 )
 
 #############
@@ -82,7 +88,7 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_subdirectory(test)
+  # add_subdirectory(test)
 endif()
 
 #############

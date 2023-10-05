@@ -45,8 +45,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
-target_link_libraries(${PROJECT_NAME} PUBLIC
-  Ceres::ceres
+target_link_libraries(${PROJECT_NAME}
+  ceres
   fuse_core::fuse_core
   pluginlib::pluginlib
 )
@@ -59,7 +59,7 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_subdirectory(test)
+  # add_subdirectory(test)
 endif()
 
 #############

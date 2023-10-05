@@ -65,7 +65,7 @@
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_2d/tf2_2d.hpp>
 #include <tf2_2d/transform.hpp>
 
@@ -97,8 +97,14 @@ void doTransform(
 
   tf2::Transform t;
   fromMsg(transform.transform, t);
-  t_out.twist.twist.linear = tf2::toMsg(t.getBasis() * vl);
-  t_out.twist.twist.angular = tf2::toMsg(t.getBasis() * va);
+  auto transformed_linear = t.getBasis() * vl;
+  auto transformed_angular = t.getBasis() * va;
+  t_out.twist.twist.linear.x = transformed_linear.getX();
+  t_out.twist.twist.linear.y = transformed_linear.getY();
+  t_out.twist.twist.linear.z = transformed_linear.getZ();
+  t_out.twist.twist.angular.x = transformed_angular.getX();
+  t_out.twist.twist.angular.y = transformed_angular.getY();
+  t_out.twist.twist.angular.z = transformed_angular.getZ();
   t_out.header.stamp = transform.header.stamp;
   t_out.header.frame_id = transform.header.frame_id;
 
@@ -125,8 +131,14 @@ void doTransform(
 
   tf2::Transform t;
   fromMsg(transform.transform, t);
-  t_out.accel.accel.linear = tf2::toMsg(t.getBasis() * al);
-  t_out.accel.accel.angular = tf2::toMsg(t.getBasis() * aa);
+  auto transformed_linear = t.getBasis() * al;
+  auto transformed_angular = t.getBasis() * aa;
+  t_out.accel.accel.linear.x = transformed_linear.getX();
+  t_out.accel.accel.linear.y = transformed_linear.getY();
+  t_out.accel.accel.linear.z = transformed_linear.getZ();
+  t_out.accel.accel.angular.x = transformed_angular.getX();
+  t_out.accel.accel.angular.y = transformed_angular.getY();
+  t_out.accel.accel.angular.z = transformed_angular.getZ();
   t_out.header.stamp = transform.header.stamp;
   t_out.header.frame_id = transform.header.frame_id;
 

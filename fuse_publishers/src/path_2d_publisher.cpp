@@ -50,7 +50,7 @@
 #include <nav_msgs/msg/path.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // Register this publisher with ROS as a plugin.
 PLUGINLIB_EXPORT_CLASS(fuse_publishers::Path2DPublisher, fuse_core::Publisher);

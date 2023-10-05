@@ -52,7 +52,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // Register this publisher with ROS as a plugin.
 PLUGINLIB_EXPORT_CLASS(fuse_publishers::Pose2DPublisher, fuse_core::Publisher);
@@ -188,11 +188,7 @@ void Pose2DPublisher::onInit()
         //                   TODO(methylDragon): See above ^                            // NOLINT
       );
       tf_listener_ = std::make_unique<tf2_ros::TransformListener>(
-        *tf_buffer_,
-        interfaces_.get_node_base_interface(),
-        interfaces_.get_node_logging_interface(),
-        interfaces_.get_node_parameters_interface(),
-        interfaces_.get_node_topics_interface()
+        *tf_buffer_
       );
     }
   }

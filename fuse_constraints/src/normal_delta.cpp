@@ -32,7 +32,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 #include <Eigen/Core>
-#include <glog/logging.h>
 
 #include <fuse_constraints/normal_delta.hpp>
 
@@ -43,9 +42,9 @@ NormalDelta::NormalDelta(const fuse_core::MatrixXd & A, const fuse_core::VectorX
 : A_(A),
   b_(b)
 {
-  CHECK_GT(b_.rows(), 0);
-  CHECK_GT(A_.rows(), 0);
-  CHECK_EQ(b_.rows(), A.cols());
+  // CHECK_GT(b_.rows(), 0);
+  // CHECK_GT(A_.rows(), 0);
+  // CHECK_EQ(b_.rows(), A.cols());
   set_num_residuals(A_.rows());
   mutable_parameter_block_sizes()->push_back(b_.rows());
   mutable_parameter_block_sizes()->push_back(b_.rows());

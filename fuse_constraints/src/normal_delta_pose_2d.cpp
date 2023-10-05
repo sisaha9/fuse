@@ -32,7 +32,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 #include <Eigen/Core>
-#include <glog/logging.h>
 
 #include <fuse_constraints/normal_delta_pose_2d.hpp>
 #include <fuse_core/util.hpp>

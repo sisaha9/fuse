@@ -19,7 +19,7 @@
   <depend>eigen</depend>
   <depend>libceres-dev</depend>
   <depend>suitesparse</depend>
-
+  <depend>libgoogle-glog-dev</depend>
   <build_depend>fuse_core</build_depend>
   <build_depend>fuse_graphs</build_depend>
   <build_depend>fuse_variables</build_depend>

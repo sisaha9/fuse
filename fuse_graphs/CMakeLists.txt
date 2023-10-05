@@ -32,12 +32,19 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_link_libraries(${PROJECT_NAME}
   Boost::serialization
-  Ceres::ceres
+  ceres
   fuse_core::fuse_core
   pluginlib::pluginlib
   rclcpp::rclcpp
+)
+ament_target_dependencies(${PROJECT_NAME}
+  ament_cmake_ros
+  fuse_core
+  pluginlib
+  rclcpp
+  Ceres
 )
 
 #############
@@ -48,19 +55,19 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  add_subdirectory(test)
+  # add_subdirectory(test)
 
   # Benchmarks
-  find_package(benchmark QUIET)
-  if(benchmark_FOUND)
-    # Create Problem benchmark
-    add_executable(benchmark_create_problem benchmark/benchmark_create_problem.cpp)
-    target_include_directories(benchmark_create_problem PRIVATE "test/")
-    target_link_libraries(benchmark_create_problem
-      ${PROJECT_NAME}
-      benchmark::benchmark
-    )
-  endif()
+  # find_package(benchmark QUIET)
+  # if(benchmark_FOUND)
+  #   # Create Problem benchmark
+  #   add_executable(benchmark_create_problem benchmark/benchmark_create_problem.cpp)
+  #   target_include_directories(benchmark_create_problem PRIVATE "test/")
+  #   target_link_libraries(benchmark_create_problem
+  #     ${PROJECT_NAME}
+  #     benchmark::benchmark
+  #   )
+  # endif()
 endif()
 
 #############

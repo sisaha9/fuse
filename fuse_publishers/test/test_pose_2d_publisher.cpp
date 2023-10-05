@@ -38,7 +38,7 @@
 #include <vector>
 
 // Workaround ros2/geometry2#242
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/utils.h>  // NOLINT(build/include_order)
 
 #include <fuse_constraints/absolute_pose_2d_stamped_constraint.hpp>

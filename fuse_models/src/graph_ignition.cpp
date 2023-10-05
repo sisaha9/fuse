@@ -38,6 +38,7 @@
 #include <fuse_models/graph_ignition.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <std_srvs/srv/empty.hpp>
+#include "rmw/qos_profiles.h"
 
 // Register this sensor model with ROS as a plugin.
 PLUGINLIB_EXPORT_CLASS(fuse_models::GraphIgnition, fuse_core::SensorModel);
@@ -75,7 +76,7 @@ void GraphIgnition::onInit()
       interfaces_.get_node_graph_interface(),
       interfaces_.get_node_services_interface(),
       params_.reset_service,
-      rclcpp::ServicesQoS(),
+      rmw_qos_profile_services_default,
       cb_group_
     );
   }
@@ -100,7 +101,7 @@ void GraphIgnition::onInit()
     std::bind(
       &GraphIgnition::setGraphServiceCallback, this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3),
-    rclcpp::ServicesQoS(),
+    rmw_qos_profile_services_default,
     cb_group_
   );
 }
