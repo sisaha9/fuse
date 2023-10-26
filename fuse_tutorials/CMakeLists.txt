@@ -80,6 +80,10 @@ install(DIRECTORY launch config data
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(PROGRAMS  
+src/gps_to_msg.py  
+DESTINATION lib/${PROJECT_NAME} )
+
 pluginlib_export_plugin_description_file(fuse_core fuse_plugins.xml)
 
 ament_export_targets(${PROJECT_NAME}-export HAS_LIBRARY_TARGET)

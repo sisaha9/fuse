@@ -1,0 +1,59 @@
+state_estimator:
+  ros__parameters:
+    # Fixed-lag smoother configuration
+    optimization_frequency: 20.0
+    transaction_timeout: 0.01
+    lag_duration: 0.5
+
+    motion_models:
+      bicycle_motion_model:
+        type: fuse_models::Bicycle2D
+
+    bicycle_motion_model:
+      #                         x      y     yaw   steering vx     vy     vyaw   ax   ay
+      process_noise_diagonal: [0.100, 0.100, 0.100, 0.100, 0.100, 0.100, 0.01, 0.5, 1.0]
+
+    sensor_models:
+      GPS_sensor1:
+        type: fuse_models::Pose2D
+        motion_models: [bicycle_motion_model]
+        ignition: true
+      GPS_sensor2:
+        type: fuse_models::Pose2D
+        motion_models: [bicycle_motion_model]
+      imu_sensor1:
+        type: fuse_models::Imu2D
+        motion_models: [bicycle_motion_model]
+
+    # initial_localization_sensor:
+    #   publish_on_startup: true
+    #   #                x      y      yaw    vx     vy     vyaw    ax     ay
+    #   initial_state: [0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
+    #   initial_sigma: [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0]
+
+    GPS_sensor1:
+      topic: '/intermediate/gps_pose'
+      position_dimensions: ['x', 'y']
+
+    GPS_sensor2:
+      topic: '/intermediate/gps_orientation'
+      orientation_dimensions: ['yaw']
+
+    imu_sensor1:
+      topic: '/gps_top/imu'
+      angular_velocity_dimensions: ['yaw']
+      linear_acceleration_dimensions: ['x', 'y']
+
+    publishers:
+      filtered_publisher:
+        type: fuse_publishers::Pose2DPublisher
+
+    filtered_publisher:
+      topic: 'pose_filtered'
+      base_link_frame_id: 'base_link'
+      #set odom_frame_id to empty
+      odom_frame_id: 'map'
+      map_frame_id: 'map'
+      world_frame_id: 'map'
+      publish_tf: true
+      publish_frequency: 10.0
