@@ -29,6 +29,7 @@ add_library(${PROJECT_NAME}
   src/acceleration_linear_3d_stamped.cpp
   src/orientation_2d_stamped.cpp
   src/orientation_3d_stamped.cpp
+  src/steering_angle_2d_stamped.cpp
   src/point_2d_fixed_landmark.cpp
   src/point_2d_landmark.cpp
   src/point_3d_fixed_landmark.cpp

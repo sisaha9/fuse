@@ -31,6 +31,13 @@
     hardware.
     </description>
   </class>
+  <class type="fuse_variables::SteeringAngle2DStamped" base_class_type="fuse_core::Variable">
+    <description>
+    Variable representing a 2D Steering orientation as a quaternion at a specific time and for a specific piece of
+    hardware.
+    </description>
+  </class>
+  
   <class type="fuse_variables::Point2DLandmark" base_class_type="fuse_core::Variable">
     <description>
     Variable representing a 2D point landmark that exists across time.

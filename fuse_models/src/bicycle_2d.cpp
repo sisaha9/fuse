@@ -48,9 +48,9 @@
 #include <fuse_models/common/sensor_proc.hpp>
 #include <fuse_models/common/std_utils.hpp>
 #include <fuse_models/parameters/parameter_base.hpp>
-#include <fuse_models/unicycle_2d.hpp>
-#include <fuse_models/unicycle_2d_predict.hpp>
-#include <fuse_models/unicycle_2d_state_kinematic_constraint.hpp>
+#include <fuse_models/bicycle_2d.hpp>
+#include <fuse_models/bicycle_2d_predict.hpp>
+#include <fuse_models/bicycle_2d_state_kinematic_constraint.hpp>
 #include <fuse_variables/acceleration_linear_2d_stamped.hpp>
 #include <fuse_variables/orientation_2d_stamped.hpp>
 #include <fuse_variables/position_2d_stamped.hpp>
@@ -60,9 +60,8 @@
 #include <pluginlib/class_list_macros.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-
 // Register this motion model with ROS as a plugin.
-PLUGINLIB_EXPORT_CLASS(fuse_models::Unicycle2D, fuse_core::MotionModel)
+PLUGINLIB_EXPORT_CLASS(fuse_models::Bicycle2D, fuse_core::MotionModel)
 
 namespace fuse_core
 {
@@ -90,16 +89,16 @@ inline void validateCovariance(
 namespace fuse_models
 {
 
-Unicycle2D::Unicycle2D()
+Bicycle2D::Bicycle2D()
 : fuse_core::AsyncMotionModel(1),
   logger_(rclcpp::get_logger("uninitialized")),
   buffer_length_(rclcpp::Duration::max()),
   device_id_(fuse_core::uuid::NIL),
-  timestamp_manager_(&Unicycle2D::generateMotionModel, this, rclcpp::Duration::max())
+  timestamp_manager_(&Bicycle2D::generateMotionModel, this, rclcpp::Duration::max())
 {
 }
 
-void Unicycle2D::print(std::ostream & stream) const
+void Bicycle2D::print(std::ostream & stream) const
 {
   stream << "state history:\n";
   for (const auto & state : state_history_) {
@@ -108,10 +107,11 @@ void Unicycle2D::print(std::ostream & stream) const
   }
 }
 
-void Unicycle2D::StateHistoryElement::print(std::ostream & stream) const
+void Bicycle2D::StateHistoryElement::print(std::ostream & stream) const
 {
   stream << "  position uuid: " << position_uuid << "\n"
          << "  yaw uuid: " << yaw_uuid << "\n"
+         << "  steering uuid: " << steering_uuid << "\n"
          << "  velocity linear uuid: " << vel_linear_uuid << "\n"
          << "  velocity yaw uuid: " << vel_yaw_uuid << "\n"
          << "  acceleration linear uuid: " << acc_linear_uuid << "\n"
@@ -121,7 +121,7 @@ void Unicycle2D::StateHistoryElement::print(std::ostream & stream) const
          << "  acceleration linear: " << acceleration_linear << "\n";
 }
 
-void Unicycle2D::StateHistoryElement::validate() const
+void Bicycle2D::StateHistoryElement::validate() const
 {
   if (!std::isfinite(pose)) {
     throw std::runtime_error("Invalid pose " + std::to_string(pose));
@@ -140,7 +140,7 @@ void Unicycle2D::StateHistoryElement::validate() const
   }
 }
 
-bool Unicycle2D::applyCallback(fuse_core::Transaction & transaction)
+bool Bicycle2D::applyCallback(fuse_core::Transaction & transaction)
 {
   // Use the timestamp manager to generate just the required motion model segments. The timestamp
   // manager, in turn, makes calls to the generateMotionModel() function.
@@ -156,12 +156,12 @@ bool Unicycle2D::applyCallback(fuse_core::Transaction & transaction)
   return true;
 }
 
-void Unicycle2D::onGraphUpdate(fuse_core::Graph::ConstSharedPtr graph)
+void Bicycle2D::onGraphUpdate(fuse_core::Graph::ConstSharedPtr graph)
 {
   updateStateHistoryEstimates(*graph, state_history_, buffer_length_);
 }
 
-void Unicycle2D::initialize(
+void Bicycle2D::initialize(
   fuse_core::node_interfaces::NodeInterfaces<ALL_FUSE_CORE_NODE_INTERFACES> interfaces,
   const std::string & name)
 {
@@ -169,7 +169,7 @@ void Unicycle2D::initialize(
   fuse_core::AsyncMotionModel::initialize(interfaces, name);
 }
 
-void Unicycle2D::onInit()
+void Bicycle2D::onInit()
 {
   logger_ = interfaces_.get_node_logging_interface()->get_logger();
   clock_ = interfaces_.get_node_clock_interface()->get_clock();
@@ -182,11 +182,16 @@ void Unicycle2D::onInit()
       "process_noise_diagonal"),
     process_noise_diagonal);
 
-  if (process_noise_diagonal.size() != 8) {
-    throw std::runtime_error("Process noise diagonal must be of length 8!");
+  if (process_noise_diagonal.size() != 9) {
+  //print process_noise_diagonal values
+  std::string process_noise_diagonal_string = "";
+  for (size_t i = 0; i < process_noise_diagonal.size(); i++) {
+    process_noise_diagonal_string += std::to_string(process_noise_diagonal[i]) + " ";
+  }
+    throw std::runtime_error("Process noise diagonal is :" + process_noise_diagonal_string + " instead of size 9");
   }
 
-  process_noise_covariance_ = fuse_core::Vector8d(process_noise_diagonal.data()).asDiagonal();
+  process_noise_covariance_ = fuse_core::Vector9d(process_noise_diagonal.data()).asDiagonal();
 
   scale_process_noise_ =
     fuse_core::getParam(
@@ -229,13 +234,13 @@ void Unicycle2D::onInit()
   device_id_ = fuse_variables::loadDeviceId(interfaces_);
 }
 
-void Unicycle2D::onStart()
+void Bicycle2D::onStart()
 {
   timestamp_manager_.clear();
   state_history_.clear();
 }
 
-void Unicycle2D::generateMotionModel(
+void Bicycle2D::generateMotionModel(
   const rclcpp::Time & beginning_stamp,
   const rclcpp::Time & ending_stamp,
   std::vector<fuse_core::Constraint::SharedPtr> & constraints,
@@ -270,11 +275,13 @@ void Unicycle2D::generateMotionModel(
   if (base_time != beginning_stamp) {
     predict(
       base_state.pose,
+      base_state.steering,
       base_state.velocity_linear,
       base_state.velocity_yaw,
       base_state.acceleration_linear,
       (beginning_stamp - base_time).seconds(),
       state1.pose,
+      state1.steering,
       state1.velocity_linear,
       state1.velocity_yaw,
       state1.acceleration_linear);
@@ -288,6 +295,7 @@ void Unicycle2D::generateMotionModel(
   if (dt == 0.0) {
     state1.position_uuid = fuse_variables::Position2DStamped(beginning_stamp, device_id_).uuid();
     state1.yaw_uuid = fuse_variables::Orientation2DStamped(beginning_stamp, device_id_).uuid();
+    state1.steering_uuid = fuse_variables::SteeringAngle2DStamped(beginning_stamp, device_id_).uuid();
     state1.vel_linear_uuid =
       fuse_variables::VelocityLinear2DStamped(beginning_stamp, device_id_).uuid();
     state1.vel_yaw_uuid =
@@ -304,11 +312,13 @@ void Unicycle2D::generateMotionModel(
   StateHistoryElement state2;
   predict(
     state1.pose,
+    state1.steering,
     state1.velocity_linear,
     state1.velocity_yaw,
     state1.acceleration_linear,
     dt,
     state2.pose,
+    state2.steering,
     state2.velocity_linear,
     state2.velocity_yaw,
     state2.acceleration_linear);
@@ -316,6 +326,7 @@ void Unicycle2D::generateMotionModel(
   // Define the fuse variables required for this constraint
   auto position1 = fuse_variables::Position2DStamped::make_shared(beginning_stamp, device_id_);
   auto yaw1 = fuse_variables::Orientation2DStamped::make_shared(beginning_stamp, device_id_);
+  auto steering1 = fuse_variables::SteeringAngle2DStamped::make_shared(beginning_stamp, device_id_);
   auto velocity_linear1 = fuse_variables::VelocityLinear2DStamped::make_shared(
     beginning_stamp,
     device_id_);
@@ -326,6 +337,7 @@ void Unicycle2D::generateMotionModel(
     beginning_stamp, device_id_);
   auto position2 = fuse_variables::Position2DStamped::make_shared(ending_stamp, device_id_);
   auto yaw2 = fuse_variables::Orientation2DStamped::make_shared(ending_stamp, device_id_);
+  auto steering2 = fuse_variables::SteeringAngle2DStamped::make_shared(ending_stamp, device_id_);
   auto velocity_linear2 = fuse_variables::VelocityLinear2DStamped::make_shared(
     ending_stamp,
     device_id_);
@@ -339,6 +351,7 @@ void Unicycle2D::generateMotionModel(
   position1->data()[fuse_variables::Position2DStamped::X] = state1.pose.x();
   position1->data()[fuse_variables::Position2DStamped::Y] = state1.pose.y();
   yaw1->data()[fuse_variables::Orientation2DStamped::YAW] = state1.pose.yaw();
+  steering1->data()[fuse_variables::SteeringAngle2DStamped::YAW] = state1.steering;
   velocity_linear1->data()[fuse_variables::VelocityLinear2DStamped::X] = state1.velocity_linear.x();
   velocity_linear1->data()[fuse_variables::VelocityLinear2DStamped::Y] = state1.velocity_linear.y();
   velocity_yaw1->data()[fuse_variables::VelocityAngular2DStamped::YAW] = state1.velocity_yaw;
@@ -349,6 +362,7 @@ void Unicycle2D::generateMotionModel(
   position2->data()[fuse_variables::Position2DStamped::X] = state2.pose.x();
   position2->data()[fuse_variables::Position2DStamped::Y] = state2.pose.y();
   yaw2->data()[fuse_variables::Orientation2DStamped::YAW] = state2.pose.yaw();
+  steering2->data()[fuse_variables::SteeringAngle2DStamped::YAW] = state2.steering;
   velocity_linear2->data()[fuse_variables::VelocityLinear2DStamped::X] = state2.velocity_linear.x();
   velocity_linear2->data()[fuse_variables::VelocityLinear2DStamped::Y] = state2.velocity_linear.y();
   velocity_yaw2->data()[fuse_variables::VelocityAngular2DStamped::YAW] = state2.velocity_yaw;
@@ -359,11 +373,13 @@ void Unicycle2D::generateMotionModel(
 
   state1.position_uuid = position1->uuid();
   state1.yaw_uuid = yaw1->uuid();
+  state1.steering_uuid = steering1->uuid();
   state1.vel_linear_uuid = velocity_linear1->uuid();
   state1.vel_yaw_uuid = velocity_yaw1->uuid();
   state1.acc_linear_uuid = acceleration_linear1->uuid();
   state2.position_uuid = position2->uuid();
   state2.yaw_uuid = yaw2->uuid();
+  state2.steering_uuid = steering2->uuid();
   state2.vel_linear_uuid = velocity_linear2->uuid();
   state2.vel_yaw_uuid = velocity_yaw2->uuid();
   state2.acc_linear_uuid = acceleration_linear2->uuid();
@@ -394,15 +410,17 @@ void Unicycle2D::generateMotionModel(
   }
 
   // Create the constraints for this motion model segment
-  auto constraint = fuse_models::Unicycle2DStateKinematicConstraint::make_shared(
+  auto constraint = fuse_models::Bicycle2DStateKinematicConstraint::make_shared(
     name(),
     *position1,
     *yaw1,
+    *steering1,
     *velocity_linear1,
     *velocity_yaw1,
     *acceleration_linear1,
     *position2,
     *yaw2,
+    *steering2,
     *velocity_linear2,
     *velocity_yaw2,
     *acceleration_linear2,
@@ -412,17 +430,19 @@ void Unicycle2D::generateMotionModel(
   constraints.push_back(constraint);
   variables.push_back(position1);
   variables.push_back(yaw1);
+  variables.push_back(steering1);
   variables.push_back(velocity_linear1);
   variables.push_back(velocity_yaw1);
   variables.push_back(acceleration_linear1);
   variables.push_back(position2);
   variables.push_back(yaw2);
+  variables.push_back(steering2);
   variables.push_back(velocity_linear2);
   variables.push_back(velocity_yaw2);
   variables.push_back(acceleration_linear2);
 }
 
-void Unicycle2D::updateStateHistoryEstimates(
+void Bicycle2D::updateStateHistoryEstimates(
   const fuse_core::Graph & graph,
   StateHistory & state_history,
   const rclcpp::Duration & buffer_length)
@@ -463,6 +483,7 @@ void Unicycle2D::updateStateHistoryEstimates(
     auto & current_state = current_iter->second;
     if (graph.variableExists(current_state.position_uuid) &&
       graph.variableExists(current_state.yaw_uuid) &&
+      graph.variableExists(current_state.steering_uuid) &&
       graph.variableExists(current_state.vel_linear_uuid) &&
       graph.variableExists(current_state.vel_yaw_uuid) &&
       graph.variableExists(current_state.acc_linear_uuid))
@@ -470,6 +491,7 @@ void Unicycle2D::updateStateHistoryEstimates(
       // This pose does exist in the graph. Update it directly.
       const auto & position = graph.getVariable(current_state.position_uuid);
       const auto & yaw = graph.getVariable(current_state.yaw_uuid);
+      const auto & steering = graph.getVariable(current_state.steering_uuid);
       const auto & vel_linear = graph.getVariable(current_state.vel_linear_uuid);
       const auto & vel_yaw = graph.getVariable(current_state.vel_yaw_uuid);
       const auto & acc_linear = graph.getVariable(current_state.acc_linear_uuid);
@@ -477,6 +499,7 @@ void Unicycle2D::updateStateHistoryEstimates(
       current_state.pose.setX(position.data()[fuse_variables::Position2DStamped::X]);
       current_state.pose.setY(position.data()[fuse_variables::Position2DStamped::Y]);
       current_state.pose.setAngle(yaw.data()[fuse_variables::Orientation2DStamped::YAW]);
+      current_state.steering = steering.data()[fuse_variables::SteeringAngle2DStamped::YAW];
       current_state.velocity_linear.setX(
         vel_linear.data()[fuse_variables::VelocityLinear2DStamped::
         X]);
@@ -501,11 +524,13 @@ void Unicycle2D::updateStateHistoryEstimates(
       // logic, to provide a more accurate update to this state.
       predict(
         previous_state.pose,
+        previous_state.steering,
         previous_state.velocity_linear,
         previous_state.velocity_yaw,
         previous_state.acceleration_linear,
         (current_stamp - previous_stamp).seconds(),
         current_state.pose,
+        current_state.steering,
         current_state.velocity_linear,
         current_state.velocity_yaw,
         current_state.acceleration_linear);
@@ -513,9 +538,9 @@ void Unicycle2D::updateStateHistoryEstimates(
   }
 }
 
-void Unicycle2D::validateMotionModel(
+void Bicycle2D::validateMotionModel(
   const StateHistoryElement & state1, const StateHistoryElement & state2,
-  const fuse_core::Matrix8d & process_noise_covariance)
+  const fuse_core::Matrix9d & process_noise_covariance)
 {
   try {
     state1.validate();
@@ -536,9 +561,9 @@ void Unicycle2D::validateMotionModel(
   }
 }
 
-std::ostream & operator<<(std::ostream & stream, const Unicycle2D & unicycle_2d)
+std::ostream & operator<<(std::ostream & stream, const Bicycle2D & bicycle_2d)
 {
-  unicycle_2d.print(stream);
+  bicycle_2d.print(stream);
   return stream;
 }
 
